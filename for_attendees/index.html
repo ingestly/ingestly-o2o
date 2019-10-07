@@ -31,7 +31,7 @@
             var result = generateCode('ingestly', eventName, document.getElementById('canvas'));
 
             // Send an event to Ingestly
-            ingestly.trackAction('generate', 'o2o_code', {
+            Ingestly.trackAction('generate', 'o2o_code', {
                 ooName: eventName,
                 ooResult: result
             });

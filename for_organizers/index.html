@@ -103,7 +103,7 @@
             }
 
             // Record the attendee's information to Ingestly
-            ingestly.trackAction('log', 'o2o_code', {
+            Ingestly.trackAction('log', 'o2o_code', {
                 ooName: scannerInfo['eventName'],
                 ooScanner: scannerInfo['scannerName'],
                 ooKey: scannerInfo['authKey'],
