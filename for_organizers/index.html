@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ingestly O2O / For Organizers</title>
+</head>
+<body style="margin: 0; padding: 0;">
+<div style="width: 840px; margin: 40px 50px; padding: 0;">
+    <h1>Ingestly O2O / For Organizers</h1>
+
+    <div id="main_form">
+        <h2>Attendee (scanned)</h2>
+        <form name="attendee">
+            <table width="80%">
+                <tr>
+                    <th width="30%"><label for="evName">Event Name</label></th>
+                    <td width="70%"><input type="text" name="evName" id="evName" readonly/></td>
+                </tr>
+                <tr>
+                    <th><label for="lsId">LocalStorage ID</label></th>
+                    <td><input type="text" name="lsId" id="lsId" readonly/></td>
+                </tr>
+                <tr>
+                    <th><label for="ckId">Cookie ID</label></th>
+                    <td><input type="text" name="ckId" id="ckId" readonly/></td>
+                </tr>
+                <tr>
+                    <th><label for="generatedAt">Generated At</label></th>
+                    <td><input type="text" name="generatedAt" id="generatedAt" readonly/></td>
+                </tr>
+            </table>
+        </form>
+
+        <h2>Organizer</h2>
+        <form name="organizer">
+            <table width="80%">
+                <tr>
+                    <th width="30%"><label for="scannerName">Your Name</label></th>
+                    <td width="70%"><input type="text" name="scannerName" id="scannerName"/></td>
+                </tr>
+                <tr>
+                    <th><label for="eventName">Event Names</label></th>
+                    <td><input type="text" name="eventName" id="eventName"/></td>
+                </tr>
+                <tr>
+                    <th><label for="authKey">Auth Key</label></th>
+                    <td><input type="text" name="authKey" id="authKey"/></td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <td>
+                        <button id="log_attendance" style="padding: 20px;">Save an attendance info</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <!--
+    <script src="/ingestly.js"></script>
+    <script src="/page_code.js"></script>
+    -->
+    <script src="/ingestly_dummy.js"></script>
+
+    <script src="/bundle.min.js"></script>
+    <script>
+
+
+        // Parse URL parameters
+        var parsedUrl = parseUrl(window.location.href);
+        console.log(parsedUrl);
+        var attendeeInfo = {
+            evName: decodeURIComponent(parsedUrl['Query']['evName']),
+            lsId: decodeURIComponent(parsedUrl['Query']['lsId']),
+            ckId: decodeURIComponent(parsedUrl['Query']['ckId']),
+            generatedAt: decodeURIComponent(parsedUrl['Query']['generatedAt'])
+        };
+        document.forms.attendee.evName.value = attendeeInfo['evName'];
+        document.forms.attendee.lsId.value = attendeeInfo['lsId'];
+        document.forms.attendee.ckId.value = attendeeInfo['ckId'];
+        document.forms.attendee.generatedAt.value = attendeeInfo['generatedAt'];
+
+        // Restore the scanner info
+        scannerInfo = JSON.parse(localStorage.getItem('ingestly-o2o-scanner'));
+        document.forms.organizer.scannerName.value = scannerInfo && scannerInfo['scannerName'] ? scannerInfo['scannerName'] : '';
+        document.forms.organizer.eventName.value = scannerInfo && scannerInfo['eventName'] ? scannerInfo['eventName'] : '';
+        document.forms.organizer.authKey.value = scannerInfo && scannerInfo['authKey'] ? scannerInfo['authKey'] : '';
+
+        document.getElementById('log_attendance').addEventListener('click', function (ev) {
+
+            ev.preventDefault();
+
+            // Save the scanner info
+            scannerInfo = {
+                scannerName: document.forms.organizer.scannerName.value,
+                eventName: document.forms.organizer.eventName.value,
+                authKey: document.forms.organizer.authKey.value
+            };
+            localStorage.setItem('ingestly-o2o-scanner', JSON.stringify(scannerInfo));
+
+            // Verify the event name
+            if (attendeeInfo['evName'] !== scannerInfo['eventName']) {
+                alert('the event name does not match.');
+            }
+
+            // Record the attendee's information to Ingestly
+            ingestly.trackAction('log', 'o2o_code', {
+                ooName: scannerInfo['eventName'],
+                ooScanner: scannerInfo['scannerName'],
+                ooKey: scannerInfo['authKey'],
+                ooResult: {
+                    generatedAt: attendeeInfo['generatedAt'],
+                    lsId: attendeeInfo['lsId'],
+                    ckId: attendeeInfo['ckId']
+                }
+            });
+
+            // Deactivate the form
+            document.getElementById('main_form').innerHTML = '<p style="font-weight: bold; color: #04cc04">Done!</p>';
+
+        }, false);
+
+    </script>
+
+</div>
+</body>
+</html>
